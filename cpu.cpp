@@ -25,7 +25,8 @@
 using namespace std;
 nextpc nx;
 int arr[50][2];
-
+unsigned int nextPC;
+int branchsignal = 0;
 stack <unsigned int> stck;
 GUI g;
 vector <int> com;
@@ -587,6 +588,15 @@ void IF()
 	PC(pcin2, pcout2, !h1.StallF && !stall1 && !h2.StallF && !stall2);
 	im.IF1();
 
+	if (b.isBranch(buf1a.pc)!=-1) {
+		int n=nx.predictBranch(b, buf1a.pc);
+		if (n != -1) {
+			pcout1 = n;
+			pcout2 = n + 4;
+		}
+
+	}
+
 	if (clk == 1)
 		pcout1 = 0;
 	
@@ -694,15 +704,76 @@ void RFStage()
 	PCSrcDB = (cu2.jump || (cu2.branch && comp2));
 
 	PCBranchDA = cu1.Iimm * 4 + 4 + buf2a.pc;
-	PCBranchDB = cu2.Iimm * 4 + + buf2b.pc;
+	PCBranchDB = cu2.Iimm * 4 + 4+ buf2b.pc;
+	
+	if (b.isBranch(buf2b.pc)!=-1) {
+		int state = nx.fixbranch(b, PCSrcDB, buf2b.pc);
+		if (state != -1) {
+			if (state == 3) {
+				//branch should not be taken
+				//pcin1=buf2b.pc
+				//pcin2=pcin1+4
+				branchsignal = 1;
+				nextPC = buf2b.pc+4;
+				h2.updatePCSrc(1);
+			}
+			else {
+				//pcin1=state;
+				//pcin2=pcin1+4;
+				branchsignal = 2;
+				nextPC = state;
+				h2.updatePCSrc(1);
+			}
+		}
+		else {
+			//dont do anything
+			branchsignal = 3;
+			h2.updatePCSrc(0);
+		}
+
+	}
+	
+	if (b.isBranch(buf2a.pc)!=-1) {
+		int state=nx.fixbranch(b, PCSrcDA, buf2a.pc);
+		if (state != -1) {
+			if (state == 3) {
+				//branch should not be taken
+				//pcin1=buf2b.pc
+				//pcin2=pcin1+4
+				branchsignal = 1;
+				nextPC = buf2a.pc+4;
+				h1.updatePCSrc(1);
+			}
+			else {
+				//pcin1=state;
+				//pcin2=pcin1+4;
+				branchsignal = 2;
+				nextPC = state;
+				h1.updatePCSrc(1);
+			}
+		}
+		else {
+			//dont do anything
+			branchsignal = 3;
+			h1.updatePCSrc(0);
+		}
+
+	}
+
 
 	if (cu1.branch && !previousstall1) {
+		if(b.isBranch(buf2a.pc)==-1)
 		b.addBranch(buf2a.pc , comp1,PCBranchDA);
 		
 	}
 	if (cu2.branch && !previousstall2) {
+		if (b.isBranch(buf2b.pc) == -1)
 		b.addBranch(buf2b.pc , comp2,PCBranchDB);
 	}
+
+	
+
+
 	previousstall1 = h1.StallD;
 	previousstall2 = h2.StallD;
 	PCJumpA = ((pcout1 >> 28) << 28) | (cu1.Jimm * 4);
@@ -894,22 +965,33 @@ void intersectingStalls()
 void handlePC()
 {
 	int h = 0;
-	int ya3 = nx.calculatenextPC(stck, h);
-	if (ya3 == 1) {
-		pcin1 = pcout1 + 8;
+
+	if (branchsignal == 1) {
+		pcin1 = nextPC;
 		pcin2 = pcin1 + 4;
 	}
-	else if (ya3!=5 && ya3!=6){
-		pcin1 = ya3;
+	else if (branchsignal == 2) {
+		pcin1 = nextPC;
 		pcin2 = pcin1 + 4;
 	}
-	else if (ya3 == 5) {
-		pcin1 = nx.boffset1;
-		pcin2 = pcin1 + 4;
-	}
-	else if (ya3 == 6) {
-		pcin1 = nx.boffset2;
-		pcin2 = pcin1 + 4;
+	else {
+		int ya3 = nx.calculatenextPC(stck, h);
+		if (ya3 == 1) {
+			pcin1 = pcout1 + 8;
+			pcin2 = pcin1 + 4;
+		}
+		else if (ya3 != 5 && ya3 != 6) {
+			pcin1 = ya3;
+			pcin2 = pcin1 + 4;
+		}
+		else if (ya3 == 5) {
+			pcin1 = nx.boffset1;
+			pcin2 = pcin1 + 4;
+		}
+		else if (ya3 == 6) {
+			pcin1 = nx.boffset2;
+			pcin2 = pcin1 + 4;
+		}
 	}
 
 }
