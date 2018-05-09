@@ -781,7 +781,7 @@ void RFStage()
 
 	nx.setInput(cu1.jump, cu2.jump, cu1.branch, cu2.branch, cu1.jumpr, cu2.jumpr,
 		cu1.pushstack == 2, cu2.pushstack == 2, cu1.pushstack == 1, cu2.pushstack == 1,
-		pcout1, pcout2, cu1.Jimm, cu2.Jimm, PCBranchDA, PCBranchDB);
+		pcout1, pcout2, cu1.Jimm, cu2.Jimm, PCBranchDA, PCBranchDB,c1a,c2a);
 
 	if (cu1.jump || cu1.jumpr || cu1.pushstack == 2||(cu1.branch&&PCSrcDA))
 		h1.updatePCSrc(1);

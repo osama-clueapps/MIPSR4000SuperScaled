@@ -148,7 +148,7 @@ void instCU::control()
 		aluctrl = 6;
 		alusrc = 0;
 		RegDst = 1;
-		jump = 0;
+		jump = ;
 		jumpr = 1;
 		branch = 0;
 	}
