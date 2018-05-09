@@ -799,8 +799,6 @@ void RFStage()
 
 	print4();
 }
-
-
 void EXStage() {
 
 	muxforALUs();
