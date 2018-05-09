@@ -90,9 +90,7 @@ private:
 			int write1, write2;
 			write1 = cu1.RegDst ? cu1.RdE : cu1.RtD;
 			write2 = cu2.RegDst ? cu2.RdE : cu2.RtD;
-			if (cu1.RsD == write2 || cu2.RsD == write1)
-				return true;
-			if (cu1.RegDst&&cu1.RtD == write2)
+			if (cu2.RsD == write1)
 				return true;
 			if (cu2.RegDst&&cu2.RtD == write1)
 				return true;
