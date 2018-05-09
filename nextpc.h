@@ -117,15 +117,22 @@ int correctPrediction(BTB &b, int actual, int predicted) {
 	}
 }
 
- int fixbranch(BTB &b, int actual, int predicted) {
-	int state = correctPrediction(b, actual, predicted);
+ int fixbranch(BTB &b, int actual, unsigned int bpc) {
+	int state = correctPrediction(b, actual, b.TakenorNot(bpc));
 	switch (state) {
 	case 0:
+		b.update(bpc, actual);
 		return -1;
 		break;
 	case 1:
-		return 
+		b.update(bpc, 1);
+		return b.predict[b.isBranch(bpc)].predictedPC;
 		break;
+	case 2:
+		b.update(bpc, 0);
+		return 3;
+		break;
+	default: break;
 	}
 
 }
