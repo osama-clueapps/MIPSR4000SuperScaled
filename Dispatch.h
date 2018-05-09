@@ -95,15 +95,6 @@ private:
 			if (cu2.RegDst&&cu2.RtD == write1)
 				return true;
 		}
-		if (cu1.MemWrite&&cu2.RegWrite)
-		{
-			int write2;
-			write2 = cu2.RegDst ? cu2.RdE : cu2.RtD;
-			if (cu1.RsD == write2)
-				return true;
-			if (cu1.RtD == write2)
-				return true;
-		}
 		if (cu2.MemWrite&&cu1.RegWrite)
 		{
 			int write1;
